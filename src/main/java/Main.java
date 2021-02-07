@@ -10,10 +10,10 @@ public class Main {
 
         Actions actions = new Actions();
 
-        if (args.length == 0) {
-            System.out.println("Error- please type a string");
-        } else {
-            String myPath = args[0]; //"C:\\Users\\Admin\\Desktop\\example.xlsx";
+//        if (args.length == 0) {
+//            System.out.println("Error- please type a string");
+//        } else {
+            String myPath = "C:\\Users\\Admin\\Desktop\\example.xlsx"; //args[0];
             String extension = actions.getFileExtension(myPath);
             switch (extension) {
                 case ".xlsx":
@@ -24,6 +24,6 @@ public class Main {
                     break;
             }
         }
-    }
+    //}
 
 }

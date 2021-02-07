@@ -1,5 +1,6 @@
 package service;
 
+import atomic.SafeCounterWithoutLock;
 import model.Campaign;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -20,7 +21,11 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+
 public class Actions{
+
+    SafeCounterWithoutLock safeCounterWithoutLockLabel=new SafeCounterWithoutLock();
+    SafeCounterWithoutLock safeCounterWithoutLockRemoved=new SafeCounterWithoutLock();
 
     public void howManyLabelsAreThereInCollectionAndCount(List<Campaign> myList){
         Map<String, Long> uniqueLabels=myList
@@ -29,6 +34,8 @@ public class Actions{
         uniqueLabels.forEach((k,v)-> System.out.println(k + "->" + v));
 
         System.out.println(uniqueLabels.size());
+        safeCounterWithoutLockLabel.increment(uniqueLabels.size());
+        System.out.println("Current value " + safeCounterWithoutLockLabel.getValue());
     }
 
     public void notRemoved(List<Campaign> myList){
@@ -41,6 +48,8 @@ public class Actions{
                 .collect(Collectors.toList());
         campaignList.forEach(System.out::println);
         System.out.println(campaignList.size());
+        safeCounterWithoutLockRemoved.increment(campaignList.size());
+        System.out.println("Current value " + safeCounterWithoutLockRemoved.getValue());
     }
 
     public List<Campaign> statusDisabled(List<Campaign> myList){
@@ -154,8 +163,9 @@ public class Actions{
         Consumer<List<Campaign>> consumer=data->{
 
             Future<?> future=executor.submit(()->{
-            howManyLabelsAreThereInCollectionAndCount(data);
-            notRemoved(data);
+                System.out.println(Thread.currentThread().getName());
+                howManyLabelsAreThereInCollectionAndCount(data);
+                notRemoved(data);
             });
             try {
                 future.get();
