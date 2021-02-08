@@ -1,13 +1,19 @@
-package service;
+package service.impl;
 
-import atomic.SafeCounterWithoutLock;
 import model.Campaign;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,38 +24,33 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-
 public class Actions{
 
-    SafeCounterWithoutLock safeCounterWithoutLockLabel=new SafeCounterWithoutLock();
-    SafeCounterWithoutLock safeCounterWithoutLockRemoved=new SafeCounterWithoutLock();
-
+    AtomicInteger counterLabel = new AtomicInteger(0);
+    AtomicInteger counterRemoved = new AtomicInteger(0);
+   // private static final Logger LOGGER = LoggerFactory.getLogger(Actions.class);
     public void howManyLabelsAreThereInCollectionAndCount(List<Campaign> myList){
         Map<String, Long> uniqueLabels=myList
                 .stream()
                 .collect(Collectors.groupingBy(Campaign::getLabel, Collectors.counting()));
         uniqueLabels.forEach((k,v)-> System.out.println(k + "->" + v));
-
         System.out.println(uniqueLabels.size());
-        safeCounterWithoutLockLabel.increment(uniqueLabels.size());
-        System.out.println("Current value " + safeCounterWithoutLockLabel.getValue());
+        System.out.println("Current total value " + counterLabel.addAndGet(uniqueLabels.size()));
+
     }
 
     public void notRemoved(List<Campaign> myList){
-//         myList.stream()
-//                .filter(campaign -> !Objects.equals(campaign.getCampaignStatus(), "removed") && !campaign.getGroupStatus().equals("removed"))
-//                .forEach(System.out::println);
-//        System.out.println(myList.size());
         List<Campaign> campaignList=myList.stream()
                 .filter(campaign -> !Objects.equals(campaign.getCampaignStatus(), "removed") && !campaign.getGroupStatus().equals("removed"))
                 .collect(Collectors.toList());
         campaignList.forEach(System.out::println);
         System.out.println(campaignList.size());
-        safeCounterWithoutLockRemoved.increment(campaignList.size());
-        System.out.println("Current value " + safeCounterWithoutLockRemoved.getValue());
+        System.out.println("Current total value " + counterRemoved.addAndGet(campaignList.size()));
+
     }
 
     public List<Campaign> statusDisabled(List<Campaign> myList){
@@ -58,6 +59,10 @@ public class Actions{
                 .collect(Collectors.toList());
     }
 
+    public static String getType(String myStr){
+        int index = myStr.lastIndexOf('.');
+        return index == -1? null : myStr.substring(index);
+    }
 
     public void writeToXSLX(List<Campaign> campaignList) throws IOException {
 
@@ -151,11 +156,6 @@ public class Actions{
         campaign.setLabel(listOfWords[6]);
         campaign.setTypeIdStatus(listOfWords[7]);
         return campaign;
-    }
-
-    public String getFileExtension(String myStr) {
-        int index = myStr.lastIndexOf('.');
-        return index == -1? null : myStr.substring(index);
     }
 
     public void threadHandling(List<Campaign> objectList){
