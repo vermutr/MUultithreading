@@ -1,26 +1,22 @@
-package parserFile;
+package service.impl;
 
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import model.Campaign;
-import service.Actions;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import service.Codec;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParserCsvCampaign {
+public class ParserCsvCampaign implements Codec{
 
     private final Actions actions=new Actions();
     private final List<Campaign> myList = new ArrayList<>();
 
-    public void convertFileToCsv(String file){
+    public void convertFileFromCsv(String file){
         try {
 
             Reader reader = new FileReader(file);

@@ -1,21 +1,23 @@
-package parserFile;
+package service.impl;
 
 import model.Campaign;
-import org.apache.poi.ss.usermodel.*;
-import service.Actions;
-
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import service.Codec;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
-public class ParserExcelCampaign {
+
+public class ParserExcelCampaign implements Codec{
 
     Actions actions=new Actions();
 
-    public void convertFileToObject(String file) {
+    public void convertFileFromExcel(String file) {
         List<Campaign> myList = new ArrayList<>();
         try {
             Workbook wb = WorkbookFactory.create(new File(file));
